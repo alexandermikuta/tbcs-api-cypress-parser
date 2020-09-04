@@ -1,0 +1,6 @@
+# dev env
+.vscode
+
+# binaries
+cy-parser
+cy-parser.exe
