@@ -66,11 +66,10 @@ go build cy-parser.go
 
 ```
 
-## Example
+## TODO: ??? How can a test analyst get his workspace ID
 
-The following command parses all cypress scpecification files under the folder given by -cy-specs. It wents down the given folder recursivly. After all files have been parsed the imports of the results to the given TestBench CS instance is started.
+The following example recursively parses all cypress scpecification files under the folder, given by *-cy-specs* parameter. It scans for specification files that end with (default value for parameter *-cy-suffix*) `*.func.spec.ts`. After all files have been parsed the import of the results to the given TestBench CS instance is started.
 
 ```bash
-# TODO: rework example with only giving the workspace and product name for more user frienldy handling (???before publish)
 ./cy-parser -cy-specs <cypress installation folder>/cypress/integration/ -epic Cypress-Import -password <password> -product-id <your product id> -tbcs-host https://cloud01-eu.testbench.com -workspace-id <ID of your workspace> -workspace-name <workspace name> -user <user>
 ```
