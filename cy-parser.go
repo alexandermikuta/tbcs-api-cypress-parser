@@ -12,7 +12,7 @@ func main() {
 	verbose := flag.Bool("v", false, "Verbose mode.")
 	dryrun := flag.Bool("dryrun", false, "Only parses the cypress specs and shows result. No import is done.")
 	cypressspecs := flag.String("cy-specs", "./", "Cypress scpec folder.")
-	cypresssuffix := flag.String("cy-suffiy", "func.spec.ts", "Cypress scpec suffix to search for.")
+	cypresssuffix := flag.String("cy-suffix", "func.spec.ts", "Cypress scpec suffix to search for.")
 	tbcshost := flag.String("tbcs-host", "https://localhost", "TestBench CS host name to import test cases to.")
 	tenantName := flag.String("workspace-name", "imbus", "TestBench CS workspace name to import test cases to.")
 	tenantID := flag.Int("workspace-id", 1, "TestBench CS workspace id to import test cases to.")
@@ -26,7 +26,7 @@ func main() {
 
 	fmt.Print("\nRunning with:\n")
 	flag.VisitAll(func(f *flag.Flag) {
-		fmt.Print(f.Name, ":", f.Value, "\n")
+		fmt.Print(f.Name, ": ", f.Value, "\n")
 	})
 	fmt.Println()
 
