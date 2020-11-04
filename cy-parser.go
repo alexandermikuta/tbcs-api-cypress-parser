@@ -14,8 +14,8 @@ func main() {
 	cypressspecs := flag.String("cy-specs", "./", "Cypress scpec folder.")
 	cypresssuffix := flag.String("cy-suffix", "func.spec.ts", "Cypress scpec suffix to search for.")
 	tbcshost := flag.String("tbcs-host", "https://localhost", "TestBench CS host name to import test cases to.")
-	tenantName := flag.String("workspace-name", "imbus", "TestBench CS workspace name to import test cases to.")
-	tenantID := flag.Int("workspace-id", 1, "TestBench CS workspace id to import test cases to.")
+	workspaceName := flag.String("workspace-name", "imbus", "TestBench CS workspace name to import test cases to.")
+	workspaceID := flag.Int("workspace-id", 1, "TestBench CS workspace id to import test cases to.")
 	productID := flag.Int("product-id", 1, "TestBench CS product id to import test cases to.")
 	user := flag.String("user", "admin", "TestBench CS tenant admin name.")
 	password := flag.String("password", "password", "TestBench CS tenant admin password.")
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	fmt.Println("Starting import ...")
-	cy.Import(*tbcshost, *tenantName, *tenantID, *productID, *user, *password, epics, *verbose)
+	cy.Import(*tbcshost, *workspaceName, *workspaceID, *productID, *user, *password, epics, *verbose)
 	fmt.Println("Done.")
 }
 
