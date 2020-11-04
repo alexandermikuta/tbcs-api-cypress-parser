@@ -4,3 +4,8 @@
 # binaries
 cy-parser
 cy-parser.exe
+
+# cypress test example
+example/node_modules/
+example/cypress/
+example/results/
