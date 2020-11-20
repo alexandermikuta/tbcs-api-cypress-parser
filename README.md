@@ -87,7 +87,10 @@ Result:
 
 ## Build
 
+Ensure that the GOPATH is set correctly so that go can find the cloned sources within it. See <https://golang.org/doc/gopath_code.html>.
+
 ```bash
+# Run the following command from the repository root folder.
 go build cy-parser.go
 ```
 
