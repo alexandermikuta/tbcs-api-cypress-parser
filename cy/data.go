@@ -13,15 +13,39 @@ type testStepCreatedResponse struct {
 
 // TestCase importable test case.
 type TestCase struct {
-	UserStroyID  int    `json:"userStoryId"`
-	Name         string `json:"name"`
-	TestCaseType string `json:"testCaseType"`
-	TestSteps    []*TestStep
+	UserStroyID     int    `json:"userStoryId"`
+	Name            string `json:"name"`
+	TestCaseType    string `json:"testCaseType"`
+	TestSteps       []*TestStep
+	TestCaseDetails *TestCasePatch
+}
+
+// TestCasePatch extened test case data
+type TestCasePatch struct {
+	Description  *TestCaseDescription `json:"description"`
+	IsAutomated  bool                 `json:"isAutomated"`
+	ToBeReviewed bool                 `json:"toBeReviewed"`
+	ExternalID   *ExternalID          `json:"externalId"`
+}
+
+// TestCaseDescription test case description
+type TestCaseDescription struct {
+	Text string `json:"text"`
+}
+
+// ExternalID test case external id
+type ExternalID struct {
+	Value string `json:"value"`
 }
 
 type testCaseCreatedResponse struct {
 	EventID    int `json:"eventId"`
 	TestCaseID int `json:"testCaseId"`
+}
+
+type testCaseUpdateErrorResponse struct {
+	FailureType string `json:"failureType"`
+	Message     string `json:"message"`
 }
 
 // UserStory importable user story.

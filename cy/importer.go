@@ -12,18 +12,18 @@ import (
 )
 
 // Import starts the import into TestBench CS.
-func Import(host, tenantName string, tenantID, productID int, user, password string, epics []*Epic, verbose bool) {
+func Import(host, tenantName string, productID int, user, password string, epics []*Epic, verbose bool) {
 	// disable certificate checks
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	token := login(host, tenantName, user, password)
+	token, tenantID := login(host, tenantName, user, password)
 
-	createFreeTestCases(tenantID, productID, epics, host, token, verbose)
+	createTestCases(tenantID, productID, epics, host, token, verbose)
 
 	return
 }
 
-func login(host, tenantName, user, password string) (token string) {
+func login(host, tenantName, user, password string) (token string, tenantID int) {
 	data := &loginData{
 		Force:    true,
 		Tenant:   tenantName,
@@ -50,11 +50,12 @@ func login(host, tenantName, user, password string) (token string) {
 	var responseData loginResponse
 	err = json.Unmarshal(result, &responseData)
 	token = responseData.SessionToken
+	tenantID = responseData.TenantID
 
 	return
 }
 
-func createFreeTestCases(tenantID, productID int, epics []*Epic, host, sessionToken string, verbose bool) {
+func createTestCases(tenantID, productID int, epics []*Epic, host, sessionToken string, verbose bool) {
 	for _, v := range epics {
 		if verbose {
 			fmt.Println("Creating Epic: ", v.Name)
@@ -76,6 +77,7 @@ func createFreeTestCases(tenantID, productID int, epics []*Epic, host, sessionTo
 					}
 					createTestStep(tenantID, productID, testCaseID, v, host, sessionToken)
 				}
+				patchTestCase(tenantID, productID, testCaseID, v, host, sessionToken)
 			}
 		}
 	}
@@ -143,7 +145,7 @@ func createUserStory(tenantID, productID, epicID int, userStory *UserStory, host
 
 func createTestCase(tenantID, productID, userStoryID int, testCase *TestCase, host, token string) (testCaseID int) {
 	testCase.UserStroyID = userStoryID
-	testCase.TestCaseType = "ChecklistTestCase"
+	testCase.TestCaseType = "StructuredTestCase"
 	jsonValue, _ := json.Marshal(testCase)
 
 	apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID) + "/specifications/testCases"
@@ -169,6 +171,38 @@ func createTestCase(tenantID, productID, userStoryID int, testCase *TestCase, ho
 	var responseData testCaseCreatedResponse
 	err = json.Unmarshal(result, &responseData)
 	testCaseID = responseData.TestCaseID
+	return
+}
+
+func patchTestCase(tenantID, productID, testCaseID int, testCase *TestCase, host, token string) {
+	jsonValue, _ := json.Marshal(testCase.TestCaseDetails)
+
+	apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID) + "/specifications/testCases/" + strconv.Itoa(testCaseID)
+	request, err := http.NewRequest(http.MethodPatch, apiURL, bytes.NewBuffer(jsonValue))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "The HTTP request creation failed with error ", err)
+		return
+	}
+	request.Header.Set("Content-Type", "application/json; charset=utf-8")
+	request.Header.Add("Authorization", token)
+	response, err := http.DefaultClient.Do(request)
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "The HTTP request failed with error ", err)
+		return
+	}
+
+	result, _ := ioutil.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		if response.StatusCode == 409 {
+			var responseData testCaseUpdateErrorResponse
+			err = json.Unmarshal(result, &responseData)
+			fmt.Fprintln(os.Stderr, response.Status, "-", responseData.Message, "Test case:", testCase.Name)
+		} else {
+			fmt.Fprintln(os.Stderr, "Request failed with: ", response.Status, " Response: ", string(result))
+		}
+	}
+
 	return
 }
 

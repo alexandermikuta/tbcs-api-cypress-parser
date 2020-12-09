@@ -69,21 +69,56 @@ func readFile(fileName string) (userStory *UserStory) {
 			}
 		}
 		if strings.HasPrefix(line, "it(") {
+			patchData := &TestCasePatch{
+				Description:  &TestCaseDescription{Text: ""},
+				IsAutomated:  true,
+				ToBeReviewed: true,
+				ExternalID:   &ExternalID{Value: ""},
+			}
 			tc = &TestCase{
-				Name: userStory.Name + " " + getEffectiveName(line),
+				Name:            userStory.Name + " " + getEffectiveName(line),
+				TestCaseDetails: patchData,
 			}
 			userStory.TestCases = append(userStory.TestCases, tc)
 		}
-		if strings.HasPrefix(line, "cy.log(") {
-			ts = &TestStep{
-				Description: getEffectiveName(line),
-			}
+		// handle special meta keywords
+		if strings.HasPrefix(line, "TBCS_AUTID") {
 			if tc != nil {
-				tc.TestSteps = append(tc.TestSteps, ts)
+				tc.TestCaseDetails.ExternalID.Value = getEffectiveMeta("TBCS_AUTID", line)
+			}
+		} else if strings.HasPrefix(line, "TBCS_DESCRIPTION") {
+			if tc != nil {
+				tc.TestCaseDetails.Description.Text = getEffectiveMeta("TBCS_DESCRIPTION", line)
+			}
+		} else if strings.HasPrefix(line, "TBCS_CATEGORY") {
+			if tc != nil {
+				// not handled yet
+			}
+		} else { // normal log entries
+			if strings.HasPrefix(line, "cy.log(") {
+				logString := getEffectiveName(line)
+				ts = &TestStep{
+					Description: logString,
+				}
+				if tc != nil {
+					tc.TestSteps = append(tc.TestSteps, ts)
+				}
 			}
 		}
 	}
 
+	return
+}
+
+func getEffectiveMeta(metaKey, line string) (metaValue string) {
+	re := regexp.MustCompile("(" + metaKey + "\\(')(.*)('\\))")
+	match := re.FindStringSubmatch(line)
+
+	if len(match) > 1 {
+		metaValue = match[2]
+	} else {
+		metaValue = ""
+	}
 	return
 }
 
