@@ -1,10 +1,16 @@
 {
 	"integrationFolder": "tests",
 	"reporter" : "junit",
-	"reporterOptions" : {
-		"mochaFile": "results/cypressReport.xml"
-	},
-	"screenshotsFolder" :"results/screenshots",
+	"reporterOptions": {
+    "serverUrl": "https://172.21.3.2",
+    "workspace": "imbus",
+    "username": "manager",
+    "password": "testbench",
+    "productId": 4,
+    "closeAlreadyRunningAutomation": true,
+    "skipResultImport": false
+  },
+	"screenshotsFolder" :"test-results/screenshots",
 	"video": false,
   "viewportWidth": 1280,
   "numTestsKeptInMemory": 0,

@@ -10,6 +10,9 @@ describe('Login', function () {
     })
 
     it('page contains specified elements.', () => {
+        TBCS_DESCRIPTION('Test that the login page contains required elements.');
+        TBCS_AUTID('CY-SAMPLE-LOGIN-01');
+
         cy.log('Go to the login page.'); // log entry for the cy.visit in the beforeEach
 
         cy.log('Check that the login field for "Username" is displayed.');
@@ -21,6 +24,9 @@ describe('Login', function () {
     });
 
     it('page can be switched to german language.', () => {
+        TBCS_DESCRIPTION('Test that the login page allows switching the language.');
+        TBCS_AUTID('CY-SAMPLE-LOGIN-02');
+
         cy.log('Go to the login page.'); // log entry for the cy.visit in the beforeEach
 
         cy.log('Click the "german flag button" to switch to the german language.');
@@ -31,6 +37,9 @@ describe('Login', function () {
     });
 
     it('on the page is successful.', () => {
+        TBCS_DESCRIPTION('Test that the login is working.');
+        TBCS_AUTID('CY-SAMPLE-LOGIN-03');
+
         cy.log('Go to the login page.'); // log entry for the cy.visit in the beforeEach
 
         cy.log('Enter the user name.');

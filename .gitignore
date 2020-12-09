@@ -7,5 +7,6 @@ cy-parser.exe
 
 # cypress test example
 example/node_modules/
-example/cypress/
-example/results/
+example/test-results/
+example/cypress/fixtures
+example/cypress/plugins
