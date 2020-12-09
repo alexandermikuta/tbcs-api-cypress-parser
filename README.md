@@ -56,28 +56,6 @@ Result:
 ### Required TestBench CS data for the import
 
 - Your workspace name, user name and password
-- Your workspace ID
-
-  ```script
-  This one can be obtained over a login using the rest API.
-  - Go to the rest API, e.g. https://cloud01-eu.testbench.com/openapi-ui/?url=/doc/api.json#/Login
-  - Use the POST call (try it out) and enter your data as you will use in the normal UI login.
-    {
-      "force": false,
-      "tenantName": "string", // your workspace name
-      "login": "string",
-      "password": "string"
-    }
-  - Execute the call and you will get a result like the following including your workspace ID.
-    {
-      "globalRoles": [],
-      "sessionToken": "T9xLxLcNNM2oEr4Y",
-      "tenantId": 1, // this is the needed workspace-id
-      "userId": 23,
-      "videoLinkServer": "https://vls01-eu.testbench.com"
-    }
-  ```
-
 - Your product ID
 
   ```script
@@ -106,7 +84,7 @@ The following example calls are all written for the Unix bash.
 The following example recursively parses all cypress scpecification files under the folder, given by *-cy-specs* parameter. It scans for specification files that end with `*.func.spec.ts` which is the default value for parameter *-cy-suffix*. After all files have been parsed the import of the results to the given TestBench CS instance is started.
 
 ```bash
-./cy-parser -cy-specs example/tests -cy-suffix .js -product-id <your product id> -tbcs-host https://cloud01-eu.testbench.com -workspace-id <ID of your workspace> -workspace-name <workspace name> -user <user> -password <password>
+./cy-parser -cy-specs example/tests -cy-suffix .js -product-id <your product id> -tbcs-host https://cloud01-eu.testbench.com -workspace-name <workspace name> -user <user> -password <password>
 ```
 
 To check the test cases that will be generated before importing them you can use the -dry-run parameter like the following example shows.
