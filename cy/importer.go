@@ -146,6 +146,7 @@ func createUserStory(tenantID, productID, epicID int, userStory *UserStory, host
 func createTestCase(tenantID, productID, userStoryID int, testCase *TestCase, host, token string) (testCaseID int) {
 	// check if testcase already exists by external ID, if so update it and return
 	if testCase.TestCaseDetails.ExternalID.Value != "" {
+		//TODO: check in existing testcase if there are any changes before (review flag must not be updated then)
 		// https://172.21.3.2/api/tenants/1/products/4/elements?fieldValue=externalId%3Aequals%3ACY-SAMPLE-LOGIN-01&types=TestCase
 		apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID)
 		apiURL += "/elements?fieldValue=externalId%3Aequals%3A" + testCase.TestCaseDetails.ExternalID.Value + "&types=TestCase"
