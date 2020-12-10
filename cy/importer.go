@@ -144,6 +144,47 @@ func createUserStory(tenantID, productID, epicID int, userStory *UserStory, host
 }
 
 func createTestCase(tenantID, productID, userStoryID int, testCase *TestCase, host, token string) (testCaseID int) {
+	// check if testcase already exists by external ID, if so update it and return
+	if testCase.TestCaseDetails.ExternalID.Value != "" {
+		// https://172.21.3.2/api/tenants/1/products/4/elements?fieldValue=externalId%3Aequals%3ACY-SAMPLE-LOGIN-01&types=TestCase
+		apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID)
+		apiURL += "/elements?fieldValue=externalId%3Aequals%3A" + testCase.TestCaseDetails.ExternalID.Value + "&types=TestCase"
+		request, err := http.NewRequest(http.MethodGet, apiURL, bytes.NewBuffer(make([]byte, 0)))
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "The HTTP request creation failed with error ", err)
+			return
+		}
+		request.Header.Set("Content-Type", "application/json; charset=utf-8")
+		request.Header.Add("Authorization", token)
+		response, err := http.DefaultClient.Do(request)
+
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "The HTTP request failed with error ", err)
+			return
+		}
+
+		result, _ := ioutil.ReadAll(response.Body)
+		if response.StatusCode != 200 {
+			fmt.Fprintln(os.Stderr, "Request failed with: ", response.Status, " Response: ", string(result))
+		}
+
+		var responseData []elementResponses
+		err = json.Unmarshal(result, &responseData)
+
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Failed to read response with error ", err)
+			return
+		}
+		if len(responseData) > 0 && responseData[0].TestCaseSummary.Tbid != "" {
+			testCaseID = responseData[0].TestCaseSummary.ID
+			// test case found, now delete all steps of the existing test case, they will be created new
+			deleteAllTestSteps(tenantID, productID, testCaseID, host, token)
+
+			return // todo only return after teststeps deleted
+		}
+	}
+
+	// create new (not yet existing test case by external id) as usal
 	testCase.UserStroyID = userStoryID
 	testCase.TestCaseType = "StructuredTestCase"
 	jsonValue, _ := json.Marshal(testCase)
@@ -175,7 +216,7 @@ func createTestCase(tenantID, productID, userStoryID int, testCase *TestCase, ho
 }
 
 func patchTestCase(tenantID, productID, testCaseID int, testCase *TestCase, host, token string) {
-	jsonValue, _ := json.Marshal(testCase.TestCaseDetails)
+	jsonValue, _ := json.Marshal(testCase.TestCaseDetails) //TODO: ensure existing description
 
 	apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID) + "/specifications/testCases/" + strconv.Itoa(testCaseID)
 	request, err := http.NewRequest(http.MethodPatch, apiURL, bytes.NewBuffer(jsonValue))
@@ -233,5 +274,60 @@ func createTestStep(tenantID, productID, testCaseID int, testStep *TestStep, hos
 	var responseData testStepCreatedResponse
 	err = json.Unmarshal(result, &responseData)
 	testCaseID = responseData.TestStepID
+	return
+}
+
+func deleteAllTestSteps(tenantID, productID, testCaseID int, host, token string) {
+	apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID) + "/specifications/testCases/" + strconv.Itoa(testCaseID)
+	//request, err := http.NewRequest("DELETE", apiURL, bytes.NewBuffer(make([]byte, 0)))
+	request, err := http.NewRequest(http.MethodGet, apiURL, bytes.NewBuffer(make([]byte, 0)))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "The HTTP request creation failed with error ", err)
+		return
+	}
+	request.Header.Set("Content-Type", "application/json; charset=utf-8")
+	request.Header.Add("Authorization", token)
+	response, err := http.DefaultClient.Do(request)
+
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "The HTTP request failed with error ", err)
+		return
+	}
+
+	result, _ := ioutil.ReadAll(response.Body)
+	if response.StatusCode != 200 {
+		fmt.Fprintln(os.Stderr, "Request failed with: ", response.Status, " Response: ", string(result))
+	}
+
+	var responseData getTestCaseResponse
+	err = json.Unmarshal(result, &responseData)
+
+	// delete each step in test step block named "Test"
+	for _, block := range responseData.TestSequence.TestStepBlocks {
+		if block.Name == "Test" {
+			for _, step := range block.Steps {
+				apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID)
+				apiURL += "/specifications/testCases/" + strconv.Itoa(testCaseID) + "/testSteps/" + strconv.Itoa(step.ID)
+				request, err := http.NewRequest("DELETE", apiURL, bytes.NewBuffer(make([]byte, 0)))
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "The HTTP request creation failed with error ", err)
+					return
+				}
+				request.Header.Set("Content-Type", "application/json; charset=utf-8")
+				request.Header.Add("Authorization", token)
+				response, err := http.DefaultClient.Do(request)
+
+				if err != nil {
+					fmt.Fprintln(os.Stderr, "The HTTP request failed with error ", err)
+					return
+				}
+
+				result, _ := ioutil.ReadAll(response.Body)
+				if response.StatusCode != 200 {
+					fmt.Fprintln(os.Stderr, "Request failed with: ", response.Status, " Response: ", string(result))
+				}
+			}
+		}
+	}
 	return
 }

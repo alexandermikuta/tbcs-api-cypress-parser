@@ -70,6 +70,7 @@ func readFile(fileName string) (userStory *UserStory) {
 		}
 		if strings.HasPrefix(line, "it(") {
 			patchData := &TestCasePatch{
+				Name:         userStory.Name + " " + getEffectiveName(line),
 				Description:  &TestCaseDescription{Text: ""},
 				IsAutomated:  true,
 				ToBeReviewed: true,

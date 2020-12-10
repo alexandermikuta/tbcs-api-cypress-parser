@@ -22,6 +22,7 @@ type TestCase struct {
 
 // TestCasePatch extened test case data
 type TestCasePatch struct {
+	Name         string               `json:"name"`
 	Description  *TestCaseDescription `json:"description"`
 	IsAutomated  bool                 `json:"isAutomated"`
 	ToBeReviewed bool                 `json:"toBeReviewed"`
@@ -69,6 +70,41 @@ type Epic struct {
 type epicCreatedResponse struct {
 	EventID int `json:"eventId"`
 	EpicID  int `json:"epicId"`
+}
+
+type elementResponses struct {
+	TestCaseSummary *testCaseSummary `json:"TestCaseSummary"`
+}
+
+type testCaseSummary struct {
+	Name string `json:"name"`
+	Tbid string `json:"tbid"`
+	ID   int    `json:"id"`
+}
+
+type getTestCaseResponse struct {
+	ProductID    int           `json:"productId"`
+	EpicID       int           `json:"epicId"`
+	UserStoryID  int           `json:"userStoryId"`
+	ID           int           `json:"id"`
+	Name         string        `json:"name"`
+	Description  string        `json:"description"`
+	TestSequence *testSequence `json:"testSequence"`
+}
+
+type testSequence struct {
+	TestStepBlocks []*testStepBlock `json:"testStepBlocks"`
+}
+
+type testStepBlock struct {
+	ID    int     `json:"id"`
+	Name  string  `json:"name"`
+	Steps []*step `json:"steps"`
+}
+
+type step struct {
+	ID          int    `json:"id"`
+	Description string `json:"description"`
 }
 
 type loginData struct {
