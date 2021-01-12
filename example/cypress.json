@@ -2,10 +2,10 @@
 	"integrationFolder": "tests",
 	"reporter" : "junit",
 	"reporterOptions": {
-    "serverUrl": "https://172.21.3.2",
-    "workspace": "imbus",
-    "username": "manager",
-    "password": "testbench",
+    "serverUrl": "https://cloud01.testbench.com",
+    "workspace": "<workspace>",
+    "username": "<user>",
+    "password": "<password>",
     "productId": 4,
     "closeAlreadyRunningAutomation": true,
     "skipResultImport": false
