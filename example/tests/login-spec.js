@@ -32,8 +32,8 @@ describe('Login', function () {
         cy.log('Click the "german flag button" to switch to the german language.');
         cy.get('[id=german]').should('be.visible').click();
 
-        cy.log('Check that the "access data" button is labeled with "Zugangsdaten" correctly.');
-        cy.get('[id=accessData]').should('be.visible').should('have.text', 'Zugangsdaten');
+        cy.log('Check that the login button is labeled with "Anmelden" correctly.');
+        cy.get('[id=button_login]').should('be.visible').should('have.text', ' Anmelden ');
     });
 
     it('on the page is successful.', () => {
