@@ -141,91 +141,95 @@ function afterEachTest() {
 // https://github.com/junit-team/junit5/blob/master/platform-tests/src/test/resources/jenkins-junit.xsd
 // https://llg.cubic.org/docs/junit/
 function afterAllTests() {
-  const specName = getSpecName();
-  var totalTime = 0;
-  var totalTests = 0;
-  var failedSuites = 0;
+  try {
+    const specName = getSpecName();
+    var totalTime = 0;
+    var totalTests = 0;
+    var failedSuites = 0;
 
-  reportTestSuites.forEach(suite => {
-    suite.time = 0;
-    suite.testCount = 0;
-    suite.failedCount = 0;
-    suite.skippedCount = 0;
+    reportTestSuites.forEach(suite => {
+      suite.time = 0;
+      suite.testCount = 0;
+      suite.failedCount = 0;
+      suite.skippedCount = 0;
 
-    suite.testCases.forEach(test => {
-      suite.time += test.time;
-      suite.testCount += 1;
+      suite.testCases.forEach(test => {
+        suite.time += test.time;
+        suite.testCount += 1;
 
-      if (test.failed) {
-        suite.failedCount += 1;
-      } else if (test.skipped) {
-        suite.skippedCount += 1;
-      }
-    });
-
-    totalTime += suite.time;
-    totalTests += suite.testCount;
-    failedSuites += suite.failedCount;
-  });
-
-  const totalTimeString = timeToSeconds(totalTime);
-
-  let content = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  content += '<testsuites name="Cypress Tests" ';
-  content += `time="${totalTimeString}" `;
-  content += `tests="${totalTests}" `;
-  content += `failures="${failedSuites}">\n`;
-
-  reportTestSuites.forEach(suite => {
-    content += `\t<testsuite name="${suite.name}" `;
-    content += `timestamp="${new Date().toISOString()}" `;
-    content += `tests="${suite.testCount}" `;
-    content += `failures="${suite.failedCount}" `;
-    content += `skipped="${suite.skippedCount}" `;
-    content += `time="${timeToSeconds(suite.time)}">\n`;
-
-    suite.testCases.forEach(test => {
-      content += `\t\t<testcase name="${test.name}" `;
-      content += `time="${timeToSeconds(test.time)}" `;
-      content += `classname="${specName}">\n`;
-
-      test.metaCommands.forEach(cmd => {
-        if (cmd.name === 'log') {
-          content += '\t\t\t<!--' + cmd.content + '-->\n';
+        if (test.failed) {
+          suite.failedCount += 1;
+        } else if (test.skipped) {
+          suite.skippedCount += 1;
         }
       });
 
-      content += '\t\t\t<system-out>\n';
-      content += '\t\t\t<![CDATA[\n';
-      test.commands.forEach(cmd => {
-        content += '\t\t\t\t' + cmd.content + '\n';
-      });
-      content += '\t\t\t]]>\n';
-      content += '\t\t\t</system-out>\n';
-
-      if (test.failed) {
-        content += `\t\t\t<failure><![CDATA[${test.error}]]></failure>\n`;
-      }
-      if (test.skipped) {
-        content += '\t\t\t<skipped />\n';
-      }
-      content += '\t\t</testcase>\n';
+      totalTime += suite.time;
+      totalTests += suite.testCount;
+      failedSuites += suite.failedCount;
     });
 
-    content += '\t</testsuite>\n';
-  });
-  content += '</testsuites>';
+    const totalTimeString = timeToSeconds(totalTime);
 
-  const filename = getSpecName().replace(/\//g, '_');
-  const filepath = `${getFilePath(filename)}.xml`;
-  cy.writeFile(filepath, content);
+    let content = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    content += '<testsuites name="Cypress Tests" ';
+    content += `time="${totalTimeString}" `;
+    content += `tests="${totalTests}" `;
+    content += `failures="${failedSuites}">\n`;
 
-  // If no tests are run then this could be problem in 'before all' hook
-  if (totalTests === 0 && this.currentTest.err) {
-    const error = this.currentTest.err;
-    const errorFilename = `${getSpecName()}/${error.name}.txt`;
-    const erroFilepath = getFilePath(errorFilename);
-    cy.writeFile(erroFilepath, error.message);
+    reportTestSuites.forEach(suite => {
+      content += `\t<testsuite name="${suite.name}" `;
+      content += `timestamp="${new Date().toISOString()}" `;
+      content += `tests="${suite.testCount}" `;
+      content += `failures="${suite.failedCount}" `;
+      content += `skipped="${suite.skippedCount}" `;
+      content += `time="${timeToSeconds(suite.time)}">\n`;
+
+      suite.testCases.forEach(test => {
+        content += `\t\t<testcase name="${test.name}" `;
+        content += `time="${timeToSeconds(test.time)}" `;
+        content += `classname="${specName}">\n`;
+
+        test.metaCommands.forEach(cmd => {
+          if (cmd.name === 'log') {
+            content += '\t\t\t<!--' + cmd.content + '-->\n';
+          }
+        });
+
+        content += '\t\t\t<system-out>\n';
+        content += '\t\t\t<![CDATA[\n';
+        test.commands.forEach(cmd => {
+          content += '\t\t\t\t' + cmd.content + '\n';
+        });
+        content += '\t\t\t]]>\n';
+        content += '\t\t\t</system-out>\n';
+
+        if (test.failed) {
+          content += `\t\t\t<failure><![CDATA[${test.error}]]></failure>\n`;
+        }
+        if (test.skipped) {
+          content += '\t\t\t<skipped />\n';
+        }
+        content += '\t\t</testcase>\n';
+      });
+
+      content += '\t</testsuite>\n';
+    });
+    content += '</testsuites>';
+
+    const filename = getSpecName().replace(/\//g, '_');
+    const filepath = `${getFilePath(filename)}.xml`;
+    cy.writeFile(filepath, content);
+
+    // If no tests are run then this could be problem in 'before all' hook
+    if (totalTests === 0 && this.currentTest.err) {
+      const error = this.currentTest.err;
+      const errorFilename = `${getSpecName()}/${error.name}.txt`;
+      const erroFilepath = getFilePath(errorFilename);
+      cy.writeFile(erroFilepath, error.message);
+    }
+  } catch (error) {
+    console.error(error);
   }
 }
 
