@@ -231,6 +231,16 @@ function afterAllTests() {
   } catch (error) {
     console.error(error);
   }
+  cy.wrap('Closing TBCS test session.').then(() => {
+    return new Cypress.Promise((resolve, _) => {
+      setTimeout(async () => {
+        await tbcsAutomation.Logout();
+        resolve('sent');
+      }, 2000);
+    }).then(res => {
+      expect(res).to.eq('sent');
+    });
+  });
 }
 
 startEventListeners();

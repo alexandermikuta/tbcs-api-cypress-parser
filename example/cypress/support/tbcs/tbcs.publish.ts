@@ -34,13 +34,21 @@ export class TestBenchAutomation {
           name: moment().toISOString(),
         }
         await this.createNewTestSession();
+        let sessionData = {
+          status: 'InProgress'
+        }
+        await this.patchTestSession(sessionData);
       })
       .catch(error => this.logError(error));
   }
 
-  public logout() {
+  public async Logout() {
     console.log(`TestBenchAutomation.logout()`);
-    axios({
+    let sessionData = {
+      status: 'Completed'
+    }
+    await this.patchTestSession(sessionData);
+    return axios({
       method: 'delete',
       url: `${this.base}/tenants/${this.session.tenantId}/login/session`,
       headers: this.automationHeaders(),
@@ -83,14 +91,13 @@ export class TestBenchAutomation {
       data: this.testSession,
     })
       .then(async response => {
-        // update new session data
         this.testSession = {
           id: response.data.testSessionId,
         };
       })
       .catch(error => {
         if (error.response && error.response.status !== 201) {
-          console.warn(`Warning: Create new Test Session failed.`);
+          console.warn(`Warning: Create new test session failed.`);
         } else {
           this.logError(error);
         }
@@ -117,7 +124,27 @@ export class TestBenchAutomation {
       })
       .catch(error => {
         if (error.response && error.response.status !== 201) {
-          console.warn(`Warning: Adding execution to Test Session.`);
+          console.warn(`Warning: Adding execution to test session failed.`);
+        } else {
+          this.logError(error);
+        }
+      });
+  }
+
+  private patchTestSession(sessionData: any) {
+    console.log(`TestBenchAutomation.patchTestSession(${JSON.stringify(sessionData)})`);
+    return axios({
+      method: 'patch',
+      url: this.testSessionUrl('/' + this.testSession.id + '/v1'),
+      headers: this.automationHeaders(),
+      data: sessionData,
+    })
+      .then(response => {
+        //console.log(response.data.testSessionId);
+      })
+      .catch(error => {
+        if (error.response && error.response.status !== 201) {
+          console.warn(`Failed to patch test session.`);
         } else {
           this.logError(error);
         }
