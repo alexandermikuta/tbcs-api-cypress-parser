@@ -6,7 +6,7 @@
     "workspace": "<workspace>",
     "username": "<user>",
     "password": "<password>",
-    "productId": 4,
+    "productId": "<product ID, see README.md>",
     "closeAlreadyRunningAutomation": true,
     "skipResultImport": true
   },
