@@ -31,7 +31,7 @@ export class TestBenchAutomation {
           productId: this.options.productId,
         };
         this.testSession = {
-          name: moment().toISOString(),
+          name: 'CYPRESS ' + moment().toISOString(),
         }
         await this.createNewTestSession();
         let sessionData = {
@@ -107,7 +107,7 @@ export class TestBenchAutomation {
   private updateTestSession(testCaseId, executionId: number) {
     console.log(`TestBenchAutomation.updateTestSession(${JSON.stringify(testCaseId)}, ${JSON.stringify(executionId)})`);
     let execution: TestBenchTestSessionExecution = {
-      testCaseId: testCaseId,
+      testCaseIds: { testCaseId: testCaseId },
       executionId: executionId,
     }
     let executions: TestBenchTestSessionExecutions = {

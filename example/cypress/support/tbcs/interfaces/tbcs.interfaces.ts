@@ -13,17 +13,17 @@ export interface TestBenchSession {
   tenantId: number;
   productId: number;
 }
-export interface TestBenchTestSession{
+export interface TestBenchTestSession {
   name?: string;
   id?: number;
 }
 
-export interface TestBenchTestSessionExecutions{
-  addExecutions: Array<TestBenchTestSessionExecution>
+export interface TestBenchTestSessionExecutions {
+  addExecutions: Array<TestBenchTestSessionExecution>;
 }
 
-export interface TestBenchTestSessionExecution{
-  testCaseId: number;
+export interface TestBenchTestSessionExecution {
+  testCaseIds: any;
   executionId: number;
 }
 
