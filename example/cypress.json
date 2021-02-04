@@ -8,7 +8,7 @@
     "password": "<password>",
     "productId": 4,
     "closeAlreadyRunningAutomation": true,
-    "skipResultImport": false
+    "skipResultImport": true
   },
 	"screenshotsFolder" :"test-results/screenshots",
 	"video": false,
@@ -18,5 +18,6 @@
   "pageLoadTimeout": 180000,
   "requestTimeout": 25000,
   "defaultCommandTimeout": 25000,
-  "responseTimeout": 90000
+  "responseTimeout": 90000,
+  "chromeWebSecurity": false
 }
