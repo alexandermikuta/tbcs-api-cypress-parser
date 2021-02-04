@@ -133,8 +133,7 @@ Configuration is done in file examples/cypress.json
 
 ```json
 {
-  "integrationFolder": "tests",
-  "reporter": "junit",
+  ...
   "reporterOptions": {
     "serverUrl": "https://cloud01-eu.testbench.com",
     "workspace": "imbus",
