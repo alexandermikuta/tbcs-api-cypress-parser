@@ -94,6 +94,19 @@ export class TestBenchAutomation {
         this.testSession = {
           id: response.data.testSessionId,
         };
+        // join the test session as participant
+        await axios({
+          method: 'patch',
+          url: this.testSessionUrl('/' + this.testSession.id + '/participant/self/v1'),
+          headers: this.automationHeaders(),
+          data: { active: true },
+        }).catch(error => {
+          if (error.response && error.response.status !== 200) {
+            console.warn(`Warning: Join test session failed.`);
+          } else {
+            this.logError(error);
+          }
+        });
       })
       .catch(error => {
         if (error.response && error.response.status !== 201) {
