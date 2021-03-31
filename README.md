@@ -92,10 +92,7 @@ The following example calls are all written for the Unix bash.
 The following example recursively parses all cypress scpecification files under the folder, given by _-cy-specs_ parameter. It scans for specification files that end with `*.func.spec.ts` which is the default value for parameter _-cy-suffix_. After all files have been parsed the import of the results to the given TestBench CS instance is started.
 
 ```bash
-./cy-parser -cy-specs /mnt/e/work/repos/git/tbcs-b/systemtest/cypress/integration/ -product-id  -tbcs-host https://cloud01-eu.testbench.com -workspace-name TBCS-Testing -user fa-tbcs-aut -password 'zVjsbPxh;_IR'
-
-
-./cy-parser -cy-specs example/tests -cy-suffix .js -product-id 4 -tbcs-host https://172.21.3.2 -workspace-name imbus -user manager -password testbench
+./cy-parser -cy-specs /mnt/e/work/repos/git/tbcs-b/systemtest/cypress/integration/ -product-id <id> -tbcs-host https://cloud01-eu.testbench.com -workspace-name <workspace> -user <user> -password <pw>
 ```
 
 To check the test cases that will be generated before importing them you can use the -dry-run parameter like the following example shows.
