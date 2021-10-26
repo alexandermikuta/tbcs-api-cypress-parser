@@ -2,6 +2,9 @@ const axios = require('axios');
 import moment = require('moment');
 import { TestBenchOptions, TestStepResult, TestBenchSession, TestBenchTestCase, Status, TestBenchTestSession, TestBenchTestSessionExecution, TestBenchTestSessionExecutions } from './interfaces/tbcs.interfaces';
 
+//import { log } from './meta';
+import { ReportLogger } from './report.logger';
+
 export class TestBenchAutomation {
   private base: String;
   private session: TestBenchSession = undefined;
@@ -12,7 +15,7 @@ export class TestBenchAutomation {
   }
 
   public async Login() {
-    console.log('TestBenchAutomation.login()');
+    ReportLogger.info('TestBenchAutomation.login()');
     return axios({
       method: 'post',
       url: `${this.base}/tenants/login/session`,
@@ -43,30 +46,30 @@ export class TestBenchAutomation {
   }
 
   public async Logout() {
-    console.log(`TestBenchAutomation.logout()`);
     let sessionData = {
       status: 'Completed'
     }
     await this.patchTestSession(sessionData);
+    ReportLogger.info(`TestBenchAutomation.logout()`);
     return axios({
       method: 'delete',
       url: `${this.base}/tenants/${this.session.tenantId}/login/session`,
       headers: this.automationHeaders(),
     })
-      .then(response => (this.session = undefined))
+      .then(() => (this.session = undefined))
       .catch(error => this.logError(error));
   }
 
   private logError(error: any) {
     if (error.response === undefined) {
-      console.error('Unexpected error occurred:');
-      console.error(error);
+      ReportLogger.error('Unexpected error occurred:');
+      ReportLogger.error(error);
     } else if (error.response.data === undefined) {
-      console.error('Unexpected response error occurred:');
-      console.error(error.response);
+      ReportLogger.error('Unexpected response error occurred:');
+      ReportLogger.error(error.response);
     } else {
-      console.error('Error occurred:');
-      console.error(error.response.data);
+      ReportLogger.error('Error occurred:');
+      ReportLogger.error(error.response.data);
     }
   }
 
@@ -83,7 +86,7 @@ export class TestBenchAutomation {
   }
 
   private createNewTestSession() {
-    console.log(`TestBenchAutomation.createNewTestSession()`);
+    ReportLogger.info(`TestBenchAutomation.createNewTestSession()`);
     return axios({
       method: 'post',
       url: this.testSessionUrl('/v1'),
@@ -102,7 +105,7 @@ export class TestBenchAutomation {
           data: { active: true },
         }).catch(error => {
           if (error.response && error.response.status !== 200) {
-            console.warn(`Warning: Join test session failed.`);
+            ReportLogger.warn(`Warning: Join test session failed.`);
           } else {
             this.logError(error);
           }
@@ -110,7 +113,7 @@ export class TestBenchAutomation {
       })
       .catch(error => {
         if (error.response && error.response.status !== 201) {
-          console.warn(`Warning: Create new test session failed.`);
+          ReportLogger.warn(`Warning: Create new test session failed.`);
         } else {
           this.logError(error);
         }
@@ -118,7 +121,7 @@ export class TestBenchAutomation {
   }
 
   private updateTestSession(testCaseId, executionId: number) {
-    console.log(`TestBenchAutomation.updateTestSession(${JSON.stringify(testCaseId)}, ${JSON.stringify(executionId)})`);
+    ReportLogger.info(`TestBenchAutomation.updateTestSession(testCaseId: ${JSON.stringify(testCaseId)}, executionId: ${JSON.stringify(executionId)})`);
     let execution: TestBenchTestSessionExecution = {
       testCaseIds: { testCaseId: testCaseId },
       executionId: executionId,
@@ -133,11 +136,11 @@ export class TestBenchAutomation {
       data: executions,
     })
       .then(response => {
-        //console.log(response.data.testSessionId);
+        //ReportLogger.info(response.data.testSessionId);
       })
       .catch(error => {
         if (error.response && error.response.status !== 201) {
-          console.warn(`Warning: Adding execution to test session failed.`);
+          ReportLogger.warn(`Warning: Adding execution to test session failed.`);
         } else {
           this.logError(error);
         }
@@ -145,7 +148,7 @@ export class TestBenchAutomation {
   }
 
   private patchTestSession(sessionData: any) {
-    console.log(`TestBenchAutomation.patchTestSession(${JSON.stringify(sessionData)})`);
+    ReportLogger.info(`TestBenchAutomation.patchTestSession(${JSON.stringify(sessionData)})`);
     return axios({
       method: 'patch',
       url: this.testSessionUrl('/' + this.testSession.id + '/v1'),
@@ -153,11 +156,11 @@ export class TestBenchAutomation {
       data: sessionData,
     })
       .then(response => {
-        //console.log(response.data.testSessionId);
+        //ReportLogger.info(response.data.testSessionId);
       })
       .catch(error => {
         if (error.response && error.response.status !== 201) {
-          console.warn(`Failed to patch test session.`);
+          ReportLogger.warn(`Failed to patch test session.`);
         } else {
           this.logError(error);
         }
@@ -165,7 +168,7 @@ export class TestBenchAutomation {
   }
 
   public async RunAutomatedTest(testCase: TestBenchTestCase, status?: Status) {
-    console.log(`TestBenchAutomation.runAutomatedTest(${JSON.stringify(testCase.externalId)})`);
+    ReportLogger.info(`TestBenchAutomation.runAutomatedTest(testCase: ${JSON.stringify(testCase.externalId)})`);
     return axios({
       method: 'post',
       url: this.automationUrl(''),
@@ -195,7 +198,7 @@ export class TestBenchAutomation {
       })
       .catch(error => {
         if (error.response && error.response.status === 409 && this.options.closeAlreadyRunningAutomation) {
-          console.warn(`Warning: Terminating old automation of ${error.response.data.details.externalId} and starting automation of ${testCase.externalId}.`);
+          ReportLogger.warn(`Warning: Terminating old automation of ${error.response.data.details.externalId} and starting automation of ${testCase.externalId}.`);
           this.terminateAutomation(Status.Calculated);
           this.RunAutomatedTest(testCase);
         } else {
@@ -205,7 +208,7 @@ export class TestBenchAutomation {
   }
 
   private terminateAutomation(status?: Status) {
-    console.log(`TestBenchAutomation.terminateAutomation(${status})`);
+    ReportLogger.info(`TestBenchAutomation.terminateAutomation(${status})`);
     return axios({
       method: 'patch',
       url: this.automationUrl(''),
@@ -217,7 +220,7 @@ export class TestBenchAutomation {
   }
 
   public async publishTestStepResults(testSteps: TestStepResult[]) {
-    console.log(`TestBenchAutomation.publishTestStepResults(${JSON.stringify(testSteps.length)})`);
+    ReportLogger.info(`TestBenchAutomation.publishTestStepResults(testSteps: ${JSON.stringify(testSteps)})`);
     for (let testStep of testSteps) {
       await axios({
         method: 'put',

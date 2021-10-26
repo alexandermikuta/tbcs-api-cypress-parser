@@ -1,6 +1,7 @@
 import moment = require('moment');
 import { ReportTestCase, ReportTestCommand, ReportTestSuite } from './interfaces/report.interfaces';
 import { Status, TestBenchOptions, TestBenchTestCase } from './interfaces/tbcs.interfaces';
+import { ReportLogger } from './report.logger';
 import { TestBenchAutomation } from './tbcs.publish';
 
 const TEST_RESULT_FOLDER = 'test-results';
@@ -229,7 +230,7 @@ function afterAllTests() {
       cy.writeFile(erroFilepath, error.message);
     }
   } catch (error) {
-    console.error(error);
+    ReportLogger.error(error);
   }
   cy.wrap('Closing TBCS test session.').then(() => {
     return new Cypress.Promise((resolve, _) => {
