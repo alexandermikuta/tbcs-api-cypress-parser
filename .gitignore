@@ -10,3 +10,4 @@ example/node_modules/
 example/test-results/
 example/cypress/fixtures
 example/cypress/plugins
+example/test-results.xml
