@@ -1,9 +1,9 @@
 const axios = require('axios');
 import moment = require('moment');
-import { TestBenchOptions, TestStepResult, TestBenchSession, TestBenchTestCase, Status, TestBenchTestSession, TestBenchTestSessionExecution, TestBenchTestSessionExecutions } from './interfaces/tbcs.interfaces';
-
-//import { log } from './meta';
+import { json } from 'stream/consumers';
+import { Status, TestBenchOptions, TestBenchSession, TestBenchTestCase, TestBenchTestSession, TestBenchTestSessionExecution, TestBenchTestSessionExecutions, TestStep, TestStepResult } from './interfaces/tbcs.interfaces';
 import { ReportLogger } from './report.logger';
+
 
 export class TestBenchAutomation {
   private base: String;
@@ -32,6 +32,7 @@ export class TestBenchAutomation {
           accessToken: response.data.sessionToken,
           tenantId: response.data.tenantId,
           productId: this.options.productId,
+          userId: response.data.userId,
         };
         this.testSession = {
           name: 'CYPRESS ' + moment().toISOString(),
@@ -54,7 +55,7 @@ export class TestBenchAutomation {
     return axios({
       method: 'delete',
       url: `${this.base}/tenants/${this.session.tenantId}/login/session`,
-      headers: this.automationHeaders(),
+      headers: this.requestHeaders(),
     })
       .then(() => (this.session = undefined))
       .catch(error => this.logError(error));
@@ -69,7 +70,7 @@ export class TestBenchAutomation {
       ReportLogger.error(error.response);
     } else {
       ReportLogger.error('Error occurred:');
-      ReportLogger.error(error.response.data);
+      ReportLogger.error(JSON.stringify(error));
     }
   }
 
@@ -77,11 +78,15 @@ export class TestBenchAutomation {
     return `${this.base}/tenants/${this.session.tenantId}/products/${this.session.productId}/automation/testCase${suffix}`;
   }
 
+  private productUrl(suffix: string) {
+    return `${this.base}/tenants/${this.session.tenantId}/products/${this.session.productId}/${suffix}`;
+  }
+
   private testSessionUrl(suffix: string) {
     return `${this.base}/tenants/${this.session.tenantId}/products/${this.session.productId}/planning/sessions${suffix}`;
   }
 
-  private automationHeaders() {
+  private requestHeaders() {
     return { 'Content-Type': 'application/json', Authorization: `Bearer ${this.session.accessToken}` };
   }
 
@@ -90,7 +95,7 @@ export class TestBenchAutomation {
     return axios({
       method: 'post',
       url: this.testSessionUrl('/v1'),
-      headers: this.automationHeaders(),
+      headers: this.requestHeaders(),
       data: this.testSession,
     })
       .then(async response => {
@@ -101,7 +106,7 @@ export class TestBenchAutomation {
         await axios({
           method: 'patch',
           url: this.testSessionUrl('/' + this.testSession.id + '/participant/self/v1'),
-          headers: this.automationHeaders(),
+          headers: this.requestHeaders(),
           data: { active: true },
         }).catch(error => {
           if (error.response && error.response.status !== 200) {
@@ -132,7 +137,7 @@ export class TestBenchAutomation {
     return axios({
       method: 'patch',
       url: this.testSessionUrl('/' + this.testSession.id + '/assign/executions/v1'),
-      headers: this.automationHeaders(),
+      headers: this.requestHeaders(),
       data: executions,
     })
       .then(response => {
@@ -152,11 +157,11 @@ export class TestBenchAutomation {
     return axios({
       method: 'patch',
       url: this.testSessionUrl('/' + this.testSession.id + '/v1'),
-      headers: this.automationHeaders(),
+      headers: this.requestHeaders(),
       data: sessionData,
     })
       .then(response => {
-        //ReportLogger.info(response.data.testSessionId);
+        ReportLogger.debug(JSON.stringify(response.data));
       })
       .catch(error => {
         if (error.response && error.response.status !== 201) {
@@ -167,13 +172,169 @@ export class TestBenchAutomation {
       });
   }
 
+  private getTestCaseByExternalId(testCase: TestBenchTestCase): string {
+    ReportLogger.info(`TestBenchAutomation.getTestCaseByExternalId(testCase.externalId: ${JSON.stringify(testCase.externalId)})`);
+    if (testCase.externalId === undefined) return undefined;
+    return axios({
+      method: 'get',
+      url: this.productUrl('elements?fieldValue=externalId%3Aequals%3A' + testCase.externalId + '&types=TestCase'),
+      headers: this.requestHeaders(),
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+        if (response.data.elements.length !== 1) return undefined;
+        return response.data.elements[0].TestCaseSummary.id;
+      })
+      .catch(error => this.logError(error));
+  }
+
+  private getTestCaseById(testCaseId: string) {
+    ReportLogger.info(`TestBenchAutomation.getTestCaseById(testCaseId: ${testCaseId})`);
+    return axios({
+      method: 'get',
+      url: this.productUrl('specifications/testCases/' + testCaseId),
+      headers: this.requestHeaders(),
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response.data));
+        return response.data;
+      })
+      .catch(error => this.logError(error));
+  }
+
+  private deleteTestStep(testCaseId: string, testStepId: string) {
+    ReportLogger.info(`TestBenchAutomation.deleteTestStep(testCaseId: ${testCaseId}, testStepId: ${testStepId})`);
+    return axios({
+      method: 'delete',
+      url: this.productUrl('specifications/testCases/' + testCaseId + '/testSteps/' + testStepId),
+      headers: this.requestHeaders(),
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+      })
+      .catch(error => this.logError(error));
+  }
+
+  private createTestCase(testCaseName: string, type: string): string {
+    ReportLogger.info(`TestBenchAutomation.createTestCase(testCaseName: ${testCaseName})`);
+    return axios({
+      method: 'post',
+      url: this.productUrl('specifications/testCases'),
+      headers: this.requestHeaders(),
+      data: {
+        name: testCaseName,
+        testCaseType: type
+      },
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+        return response.data.testCaseId;
+      })
+      .catch(error => this.logError(error));
+  }
+
+  private patchTestCase(testCaseId: string, patchData: any): string {
+    ReportLogger.info(`TestBenchAutomation.patchTestCase(testCaseId: ${testCaseId}), data: ${JSON.stringify(patchData)}`);
+    return axios({
+      method: 'patch',
+      url: this.productUrl('specifications/testCases/' + testCaseId),
+      headers: this.requestHeaders(),
+      data: patchData,
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+        return response.data.testCaseId;
+      })
+      .catch(error => this.logError(error));
+  }
+
+  private createTestStep(testCaseId: string, testStepName: string): string {
+    ReportLogger.info(`TestBenchAutomation.createTestStep(testCaseId: ${testCaseId}, testStepName: ${testStepName})`);
+    return axios({
+      method: 'post',
+      url: this.productUrl('specifications/testCases/' + testCaseId + '/testSteps'),
+      headers: this.requestHeaders(),
+      data: {
+        testStepBlock: 'Test',
+        description: testStepName
+      },
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+        return response.data.testStepId;
+      })
+      .catch(error => this.logError(error));
+  }
+
   public async RunAutomatedTest(testCase: TestBenchTestCase, status?: Status) {
-    ReportLogger.info(`TestBenchAutomation.runAutomatedTest(testCase: ${JSON.stringify(testCase.externalId)})`);
+    ReportLogger.info(`TestBenchAutomation.runAutomatedTest(testCase: ${JSON.stringify(testCase)})`);
+
+    // if test case already exists with the externalId, update test steps
+    var testStepsCurrent: Array<TestStep> = []; // remember test steps with id's for later execution results
+    let testCaseId = await this.getTestCaseByExternalId(testCase);
+    if (testCaseId !== undefined) {
+      ReportLogger.debug(testCaseId);
+      let testCaseResponse = await this.getTestCaseById(testCaseId);
+      try {
+        // TODO: check for changed test steps, if so, update them and set review flag on tst case
+        // delete all existing steps and create them new, only from test step block 'Test' expecting an structured test case
+        for (let block of testCaseResponse.testSequence.testStepBlocks) {
+          if (block.name === 'Test') {
+            for (let step of block.steps) {
+              ReportLogger.debug(JSON.stringify(step));
+              await this.deleteTestStep(testCaseId, step.id);
+            }
+          }
+        }
+        // create test steps and remember id's
+        ReportLogger.debug('Creating steps: ' + testCase.testSteps);
+        for (let step of testCase.testSteps) {
+          let stepId = await this.createTestStep(testCaseId, step);
+          ReportLogger.debug('Created step: ' + step + ' id: ' + stepId);
+          testStepsCurrent.push({
+            id: stepId,
+            name: step
+          });
+        }
+      } catch (error) {
+        ReportLogger.warn('Failed to update test case: ' + error);
+      }
+    } else {
+      // create it as a free structured test case
+      let testCaseIdCreated = await this.createTestCase(testCase.name, 'StructuredTestCase');
+      // update for automation
+      let patchData = {
+        description: { text: testCase.description ? testCase.description : null },
+        responsibles: [this.session.userId],
+        isAutomated: true,
+        toBeReviewed: true,
+        externalId: { value: testCase.externalId ? testCase.externalId : null }
+      };
+
+      await this.patchTestCase(testCaseIdCreated, patchData);
+
+      // test steps
+      for (let step of testCase.testSteps) {
+        let stepId = await this.createTestStep(testCaseIdCreated, step);
+        ReportLogger.debug('Created step: ' + step + ' id: ' + stepId);
+        testStepsCurrent.push({
+          id: stepId,
+          name: step
+        });
+      }
+    }
+
+
+    // deprecated
     return axios({
       method: 'post',
       url: this.automationUrl(''),
-      headers: this.automationHeaders(),
-      data: testCase,
+      headers: this.requestHeaders(),
+      data: {
+        externalId: testCase.externalId,
+        name: testCase.name,
+        testSteps: testCase.testSteps
+      }
     })
       .then(async response => {
         // update matching test steps
@@ -212,7 +373,7 @@ export class TestBenchAutomation {
     return axios({
       method: 'patch',
       url: this.automationUrl(''),
-      headers: this.automationHeaders(),
+      headers: this.requestHeaders(),
       data: {
         executionResult: status,
       },
@@ -225,7 +386,7 @@ export class TestBenchAutomation {
       await axios({
         method: 'put',
         url: this.automationUrl(`/testSteps/${testStep.testStepId}/result`),
-        headers: this.automationHeaders(),
+        headers: this.requestHeaders(),
         data: `"${testStep.result}"`,
       }).catch(error => this.logError(error));
     }

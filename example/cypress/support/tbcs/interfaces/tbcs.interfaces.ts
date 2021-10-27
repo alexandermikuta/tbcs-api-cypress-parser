@@ -1,3 +1,5 @@
+import { NumberMatcher } from "cypress/types/net-stubbing";
+
 export interface TestBenchOptions {
   serverUrl: string;
   workspace: string;
@@ -12,6 +14,7 @@ export interface TestBenchSession {
   accessToken: string;
   tenantId: number;
   productId: number;
+  userId: number;
 }
 export interface TestBenchTestSession {
   name?: string;
@@ -39,15 +42,16 @@ export interface TestStepResult {
   result: Status;
 }
 
-export interface TestBenchDescription {
-  text?: string;
+export interface TestStep {
+  id: string;
+  name: string;
 }
 
 export interface TestBenchTestCase {
   externalId: string;
   name?: string;
-  description?: TestBenchDescription;
-  testSteps?: Array<string>;
+  description?: string;
+  testSteps?: string[];
   overwrite?: boolean;
   markForReview?: boolean;
 }

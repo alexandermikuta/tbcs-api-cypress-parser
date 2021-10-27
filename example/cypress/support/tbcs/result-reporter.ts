@@ -117,12 +117,20 @@ function afterEachTest() {
       eid = cmd.content.match(regcat)[2];
     }
   });
+  var descr = '';
+  loggedMetaCommands.forEach(cmd => {
+    var regcat = /(TBCS_DESCRIPTION\()(.+)(\)$)/;
+    if (regcat.test(cmd.content)) {
+      descr = cmd.content.match(regcat)[2];
+    }
+  });
   var steps: Array<string> = [];
   loggedCommands.forEach(cmd => {
     steps.push(cmd.content);
   });
   var tbcsTestCase: TestBenchTestCase = {
     name: reportTest.name,
+    description: descr,
     externalId: eid,
     testSteps: steps,
   };
