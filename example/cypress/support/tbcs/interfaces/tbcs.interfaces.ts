@@ -1,4 +1,3 @@
-import { NumberMatcher } from "cypress/types/net-stubbing";
 
 export interface TestBenchOptions {
   serverUrl: string;
@@ -38,7 +37,7 @@ export enum Status {
 }
 
 export interface TestStepResult {
-  testStepId: number;
+  testStepId: string;
   result: Status;
 }
 

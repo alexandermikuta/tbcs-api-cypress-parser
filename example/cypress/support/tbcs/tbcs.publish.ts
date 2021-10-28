@@ -1,6 +1,5 @@
 const axios = require('axios');
 import moment = require('moment');
-import { json } from 'stream/consumers';
 import { Status, TestBenchOptions, TestBenchSession, TestBenchTestCase, TestBenchTestSession, TestBenchTestSessionExecution, TestBenchTestSessionExecutions, TestStep, TestStepResult } from './interfaces/tbcs.interfaces';
 import { ReportLogger } from './report.logger';
 
@@ -74,10 +73,6 @@ export class TestBenchAutomation {
     }
   }
 
-  private automationUrl(suffix: string) {
-    return `${this.base}/tenants/${this.session.tenantId}/products/${this.session.productId}/automation/testCase${suffix}`;
-  }
-
   private productUrl(suffix: string) {
     return `${this.base}/tenants/${this.session.tenantId}/products/${this.session.productId}/${suffix}`;
   }
@@ -125,7 +120,7 @@ export class TestBenchAutomation {
       });
   }
 
-  private updateTestSession(testCaseId, executionId: number) {
+  private updateTestSession(testCaseId, executionId) {
     ReportLogger.info(`TestBenchAutomation.updateTestSession(testCaseId: ${JSON.stringify(testCaseId)}, executionId: ${JSON.stringify(executionId)})`);
     let execution: TestBenchTestSessionExecution = {
       testCaseIds: { testCaseId: testCaseId },
@@ -141,7 +136,7 @@ export class TestBenchAutomation {
       data: executions,
     })
       .then(response => {
-        //ReportLogger.info(response.data.testSessionId);
+        ReportLogger.debug(JSON.stringify(response.data));
       })
       .catch(error => {
         if (error.response && error.response.status !== 201) {
@@ -266,6 +261,63 @@ export class TestBenchAutomation {
       .catch(error => this.logError(error));
   }
 
+  private putPreconditionMarker(testCaseId: string, empty: boolean) {
+    ReportLogger.info(`TestBenchAutomation.putPreconditionMarker(testCaseId: ${testCaseId}, empty: ${empty})`);
+    return axios({
+      method: 'put',
+      url: this.productUrl('specifications/testCases/' + testCaseId + '/preconditions/emptyMarker'),
+      headers: this.requestHeaders(),
+      data: empty,
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+      })
+      .catch(error => this.logError(error));
+  }
+
+  private createTestCaseExecution(testCaseId: string): string {
+    ReportLogger.info(`TestBenchAutomation.createTestCaseExecution(testCaseId: ${testCaseId})`);
+    return axios({
+      method: 'post',
+      url: this.productUrl('executions/testCases/' + testCaseId),
+      headers: this.requestHeaders(),
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+        return response.data.executionId;
+      })
+      .catch(error => this.logError(error));
+  }
+
+  // status: Valid values are: "New", "InProgress", "Blocked", "Paused", "Finished", "Closed"
+  private updateExecutionStatus(testCaseId: string, executionId: string, status: string) {
+    ReportLogger.info(`TestBenchAutomation.updateExecutionStatus(testCaseId: ${testCaseId}, executionId: ${executionId}, status: ${status})`);
+    return axios({
+      method: 'put',
+      url: this.productUrl('executions/testCases/' + testCaseId + '/executions/' + executionId + '/status'),
+      headers: this.requestHeaders(),
+      data: status,
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+      })
+      .catch(error => this.logError(error));
+  }
+
+  private assignTestStepExecutionResult(testCaseId: string, executionId: string, testStepId: string, result: string) {
+    ReportLogger.info(`TestBenchAutomation.assignTestStepExecutionResult(testCaseId: ${testCaseId}, executionId: ${executionId}, testStepId: ${testStepId}, result: ${result})`);
+    return axios({
+      method: 'put',
+      url: this.productUrl('executions/testCases/' + testCaseId + '/executions/' + executionId + '/testSteps/' + testStepId + '/result'),
+      headers: this.requestHeaders(),
+      data: result,
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
+      })
+      .catch(error => this.logError(error));
+  }
+
   public async RunAutomatedTest(testCase: TestBenchTestCase, status?: Status) {
     ReportLogger.info(`TestBenchAutomation.runAutomatedTest(testCase: ${JSON.stringify(testCase)})`);
 
@@ -281,16 +333,13 @@ export class TestBenchAutomation {
         for (let block of testCaseResponse.testSequence.testStepBlocks) {
           if (block.name === 'Test') {
             for (let step of block.steps) {
-              ReportLogger.debug(JSON.stringify(step));
               await this.deleteTestStep(testCaseId, step.id);
             }
           }
         }
         // create test steps and remember id's
-        ReportLogger.debug('Creating steps: ' + testCase.testSteps);
         for (let step of testCase.testSteps) {
           let stepId = await this.createTestStep(testCaseId, step);
-          ReportLogger.debug('Created step: ' + step + ' id: ' + stepId);
           testStepsCurrent.push({
             id: stepId,
             name: step
@@ -301,7 +350,7 @@ export class TestBenchAutomation {
       }
     } else {
       // create it as a free structured test case
-      let testCaseIdCreated = await this.createTestCase(testCase.name, 'StructuredTestCase');
+      testCaseId = await this.createTestCase(testCase.name, 'StructuredTestCase');
       // update for automation
       let patchData = {
         description: { text: testCase.description ? testCase.description : null },
@@ -311,12 +360,12 @@ export class TestBenchAutomation {
         externalId: { value: testCase.externalId ? testCase.externalId : null }
       };
 
-      await this.patchTestCase(testCaseIdCreated, patchData);
+      await this.patchTestCase(testCaseId, patchData);
+      await this.putPreconditionMarker(testCaseId, true);
 
       // test steps
       for (let step of testCase.testSteps) {
-        let stepId = await this.createTestStep(testCaseIdCreated, step);
-        ReportLogger.debug('Created step: ' + step + ' id: ' + stepId);
+        let stepId = await this.createTestStep(testCaseId, step);
         testStepsCurrent.push({
           id: stepId,
           name: step
@@ -324,71 +373,24 @@ export class TestBenchAutomation {
       }
     }
 
+    // add execution
+    let executionId = await this.createTestCaseExecution(testCaseId);
+    await this.updateTestSession(testCaseId, executionId);
+    await this.updateExecutionStatus(testCaseId, executionId, 'InProgress');
 
-    // deprecated
-    return axios({
-      method: 'post',
-      url: this.automationUrl(''),
-      headers: this.requestHeaders(),
-      data: {
-        externalId: testCase.externalId,
-        name: testCase.name,
-        testSteps: testCase.testSteps
-      }
-    })
-      .then(async response => {
-        // update matching test steps
-        var testSteps: TestStepResult[] = [];
-        var count = 0;
-        for (let step of response.data.testSteps) {
-          count++;
-          let match = testCase.testSteps.find(s => step.description === s);
-          if (match) {
-            testSteps.push({
-              testStepId: step.id,
-              result: Status.Passed,
-            });
-          }
-        }
-        if (status === Status.Failed) {
-          testSteps[testSteps.length - 1].result = Status.Failed;
-        }
-        await this.publishTestStepResults(testSteps);
-        await this.terminateAutomation(status);
-        await this.updateTestSession(response.data.testCaseId, response.data.executionId);
-      })
-      .catch(error => {
-        if (error.response && error.response.status === 409 && this.options.closeAlreadyRunningAutomation) {
-          ReportLogger.warn(`Warning: Terminating old automation of ${error.response.data.details.externalId} and starting automation of ${testCase.externalId}.`);
-          this.terminateAutomation(Status.Calculated);
-          this.RunAutomatedTest(testCase);
-        } else {
-          this.logError(error);
-        }
+    var testStepResults: TestStepResult[] = [];
+    for (let step of testStepsCurrent) {
+      testStepResults.push({
+        testStepId: step.id,
+        result: Status.Passed,
       });
-  }
-
-  private terminateAutomation(status?: Status) {
-    ReportLogger.info(`TestBenchAutomation.terminateAutomation(${status})`);
-    return axios({
-      method: 'patch',
-      url: this.automationUrl(''),
-      headers: this.requestHeaders(),
-      data: {
-        executionResult: status,
-      },
-    }).catch(error => this.logError(error));
-  }
-
-  public async publishTestStepResults(testSteps: TestStepResult[]) {
-    ReportLogger.info(`TestBenchAutomation.publishTestStepResults(testSteps: ${JSON.stringify(testSteps)})`);
-    for (let testStep of testSteps) {
-      await axios({
-        method: 'put',
-        url: this.automationUrl(`/testSteps/${testStep.testStepId}/result`),
-        headers: this.requestHeaders(),
-        data: `"${testStep.result}"`,
-      }).catch(error => this.logError(error));
     }
+    if (status === Status.Failed) {
+      testStepResults[testStepResults.length - 1].result = Status.Failed;
+    }
+    for (let step of testStepResults) {
+      await this.assignTestStepExecutionResult(testCaseId, executionId, step.testStepId, step.result);
+    }
+    await this.updateExecutionStatus(testCaseId, executionId, 'Finished');
   }
 }
