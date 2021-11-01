@@ -2,7 +2,7 @@
 	"integrationFolder": "tests",
 	"reporter" : "junit",
 	"reporterOptions": {
-    "serverUrl": "https://cloud01.testbench.com",
+    "serverUrl": "https://cloud01-eu.testbench.com",
     "workspace": "<workspace>",
     "username": "<user>",
     "password": "<password>",

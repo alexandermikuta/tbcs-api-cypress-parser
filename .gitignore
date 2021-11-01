@@ -5,6 +5,9 @@
 cy-parser
 cy-parser.exe
 
+# logs
+*.log
+
 # cypress test example
 example/node_modules/
 example/test-results/
