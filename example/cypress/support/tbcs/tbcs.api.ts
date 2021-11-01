@@ -23,7 +23,7 @@ export class TestBenchApi {
     return { 'Content-Type': 'application/json', Authorization: `Bearer ${this.apiSession.accessToken}` };
   }
 
-  public Login() {
+  public login() {
     ReportLogger.info('TestBenchApi.login()');
     return axios({
       method: 'post',
@@ -49,7 +49,7 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  public async Logout() {
+  public async logout() {
     ReportLogger.info(`TestBenchApi.logout()`);
     return axios({
       method: 'delete',
@@ -151,12 +151,12 @@ export class TestBenchApi {
       });
   }
 
-  private getTestCaseByExternalId(testCase: TestBenchTestCase): string {
-    ReportLogger.info(`TestBenchApi.getTestCaseByExternalId(testCase.externalId: ${JSON.stringify(testCase.externalId)})`);
-    if (testCase.externalId === undefined) return undefined;
+  public getTestCaseByExternalId(externalId: string): string {
+    ReportLogger.info(`TestBenchApi.getTestCaseByExternalId(testCase.externalId: ${externalId})`);
+    if (externalId === undefined) return undefined;
     return axios({
       method: 'get',
-      url: this.productUrl('elements?fieldValue=externalId%3Aequals%3A' + testCase.externalId + '&types=TestCase'),
+      url: this.productUrl('/elements?fieldValue=externalId%3Aequals%3A' + externalId + '&types=TestCase'),
       headers: this.apiTokenHeaders(),
     })
       .then(response => {
@@ -167,11 +167,11 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  private getTestCaseById(testCaseId: string) {
+  public getTestCaseById(testCaseId: string) {
     ReportLogger.info(`TestBenchApi.getTestCaseById(testCaseId: ${testCaseId})`);
     return axios({
       method: 'get',
-      url: this.productUrl('specifications/testCases/' + testCaseId),
+      url: this.productUrl('/specifications/testCases/' + testCaseId),
       headers: this.apiTokenHeaders(),
     })
       .then(response => {
@@ -181,11 +181,11 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  private deleteTestStep(testCaseId: string, testStepId: string) {
+  public deleteTestStep(testCaseId: string, testStepId: string) {
     ReportLogger.info(`TestBenchApi.deleteTestStep(testCaseId: ${testCaseId}, testStepId: ${testStepId})`);
     return axios({
       method: 'delete',
-      url: this.productUrl('specifications/testCases/' + testCaseId + '/testSteps/' + testStepId),
+      url: this.productUrl('/specifications/testCases/' + testCaseId + '/testSteps/' + testStepId),
       headers: this.apiTokenHeaders(),
     })
       .then(response => {
@@ -194,11 +194,11 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  private createTestCase(testCaseName: string, type: string): string {
+  public createTestCase(testCaseName: string, type: string): string {
     ReportLogger.info(`TestBenchApi.createTestCase(testCaseName: ${testCaseName})`);
     return axios({
       method: 'post',
-      url: this.productUrl('specifications/testCases'),
+      url: this.productUrl('/specifications/testCases'),
       headers: this.apiTokenHeaders(),
       data: {
         name: testCaseName,
@@ -212,11 +212,11 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  private patchTestCase(testCaseId: string, patchData: any): string {
+  public patchTestCase(testCaseId: string, patchData: any): string {
     ReportLogger.info(`TestBenchApi.patchTestCase(testCaseId: ${testCaseId}), data: ${JSON.stringify(patchData)}`);
     return axios({
       method: 'patch',
-      url: this.productUrl('specifications/testCases/' + testCaseId),
+      url: this.productUrl('/specifications/testCases/' + testCaseId),
       headers: this.apiTokenHeaders(),
       data: patchData,
     })
@@ -227,11 +227,11 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  private createTestStep(testCaseId: string, testStepName: string): string {
+  public createTestStep(testCaseId: string, testStepName: string): string {
     ReportLogger.info(`TestBenchApi.createTestStep(testCaseId: ${testCaseId}, testStepName: ${testStepName})`);
     return axios({
       method: 'post',
-      url: this.productUrl('specifications/testCases/' + testCaseId + '/testSteps'),
+      url: this.productUrl('/specifications/testCases/' + testCaseId + '/testSteps'),
       headers: this.apiTokenHeaders(),
       data: {
         testStepBlock: 'Test',
@@ -245,11 +245,11 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  private putPreconditionMarker(testCaseId: string, empty: boolean) {
+  public putPreconditionMarker(testCaseId: string, empty: boolean) {
     ReportLogger.info(`TestBenchApi.putPreconditionMarker(testCaseId: ${testCaseId}, empty: ${empty})`);
     return axios({
       method: 'put',
-      url: this.productUrl('specifications/testCases/' + testCaseId + '/preconditions/emptyMarker'),
+      url: this.productUrl('/specifications/testCases/' + testCaseId + '/preconditions/emptyMarker'),
       headers: this.apiTokenHeaders(),
       data: empty,
     })
@@ -259,11 +259,11 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  private createTestCaseExecution(testCaseId: string): string {
+  public createTestCaseExecution(testCaseId: string): string {
     ReportLogger.info(`TestBenchApi.createTestCaseExecution(testCaseId: ${testCaseId})`);
     return axios({
       method: 'post',
-      url: this.productUrl('executions/testCases/' + testCaseId),
+      url: this.productUrl('/executions/testCases/' + testCaseId),
       headers: this.apiTokenHeaders(),
     })
       .then(response => {
@@ -274,11 +274,11 @@ export class TestBenchApi {
   }
 
   // status: Valid values are: "New", "InProgress", "Blocked", "Paused", "Finished", "Closed"
-  private updateExecutionStatus(testCaseId: string, executionId: string, status: string) {
+  public updateExecutionStatus(testCaseId: string, executionId: string, status: string) {
     ReportLogger.info(`TestBenchApi.updateExecutionStatus(testCaseId: ${testCaseId}, executionId: ${executionId}, status: ${status})`);
     return axios({
       method: 'put',
-      url: this.productUrl('executions/testCases/' + testCaseId + '/executions/' + executionId + '/status'),
+      url: this.productUrl('/executions/testCases/' + testCaseId + '/executions/' + executionId + '/status'),
       headers: this.apiTokenHeaders(),
       data: status,
     })
@@ -288,11 +288,11 @@ export class TestBenchApi {
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
-  private assignTestStepExecutionResult(testCaseId: string, executionId: string, testStepId: string, result: string) {
+  public assignTestStepExecutionResult(testCaseId: string, executionId: string, testStepId: string, result: string) {
     ReportLogger.info(`TestBenchApi.assignTestStepExecutionResult(testCaseId: ${testCaseId}, executionId: ${executionId}, testStepId: ${testStepId}, result: ${result})`);
     return axios({
       method: 'put',
-      url: this.productUrl('executions/testCases/' + testCaseId + '/executions/' + executionId + '/testSteps/' + testStepId + '/result'),
+      url: this.productUrl('/executions/testCases/' + testCaseId + '/executions/' + executionId + '/testSteps/' + testStepId + '/result'),
       headers: this.apiTokenHeaders(),
       data: result,
     })

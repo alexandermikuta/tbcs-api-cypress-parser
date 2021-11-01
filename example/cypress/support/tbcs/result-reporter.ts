@@ -83,7 +83,7 @@ function beforeAllTests() {
     cy.wrap(null).then(() => {
       return new Cypress.Promise((resolve, _) => {
         setTimeout(async () => {
-          await tbcsAutomation.Login();
+          await tbcsAutomation.Start();
           alreadyLoggedIn = true;
           resolve('Logged in');
         }, 2000);
@@ -138,7 +138,7 @@ function afterEachTest() {
   cy.wrap('Sending result to TBCS').then(() => {
     return new Cypress.Promise((resolve, _) => {
       setTimeout(async () => {
-        await tbcsAutomation.RunAutomatedTest(tbcsTestCase, reportTest.failed ? Status.Failed : Status.Passed);
+        await tbcsAutomation.PublishAutomatedTest(tbcsTestCase, reportTest.failed ? Status.Failed : Status.Passed);
         resolve('Result sent');
       }, 2000);
     }).then(res => {
@@ -243,7 +243,7 @@ function afterAllTests() {
   cy.wrap('Closing TBCS test session.').then(() => {
     return new Cypress.Promise((resolve, _) => {
       setTimeout(async () => {
-        await tbcsAutomation.Logout();
+        await tbcsAutomation.End();
         resolve('sent');
       }, 2000);
     }).then(res => {

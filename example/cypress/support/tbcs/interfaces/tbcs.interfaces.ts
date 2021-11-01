@@ -15,11 +15,6 @@ export interface TestBenchApiSession {
   productId: number;
   userId: number;
 }
-export interface TestBenchTestSession {
-  name?: string;
-  id?: number;
-}
-
 export interface TestBenchTestSessionExecutions {
   addExecutions: Array<TestBenchTestSessionExecution>;
 }
