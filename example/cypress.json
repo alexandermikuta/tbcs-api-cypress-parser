@@ -10,6 +10,7 @@
     "closeAlreadyRunningAutomation": true,
     "skipResultImport": true
   },
+  "baseUrl": "https://vsr.testbench.com",
 	"screenshotsFolder" :"test-results/screenshots",
 	"video": false,
   "viewportWidth": 1280,
