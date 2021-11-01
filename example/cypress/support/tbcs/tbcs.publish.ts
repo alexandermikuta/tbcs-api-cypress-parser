@@ -1,12 +1,12 @@
 const axios = require('axios');
 import moment = require('moment');
-import { Status, TestBenchOptions, TestBenchSession, TestBenchTestCase, TestBenchTestSession, TestBenchTestSessionExecution, TestBenchTestSessionExecutions, TestStep, TestStepResult } from './interfaces/tbcs.interfaces';
+import { Status, TestBenchOptions, TestBenchApiSession, TestBenchTestCase, TestBenchTestSession, TestBenchTestSessionExecution, TestBenchTestSessionExecutions, TestStep, TestStepResult } from './interfaces/tbcs.interfaces';
 import { ReportLogger } from './report.logger';
 
 
 export class TestBenchAutomation {
   private base: String;
-  private session: TestBenchSession = undefined;
+  private session: TestBenchApiSession = undefined;
   private testSession: TestBenchTestSession = undefined;
 
   constructor(private options: TestBenchOptions) {

@@ -5,11 +5,11 @@ export interface TestBenchOptions {
   username: string;
   password: string;
   productId: number;
-  closeAlreadyRunningAutomation: boolean;
+  testSessionPrefix: string;
   skipResultImport: boolean;
 }
 
-export interface TestBenchSession {
+export interface TestBenchApiSession {
   accessToken: string;
   tenantId: number;
   productId: number;
