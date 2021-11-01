@@ -34,7 +34,7 @@ export class TestBenchAutomation {
   }
 
   public async PublishAutomatedTest(testCase: TestBenchTestCase, status?: Status) {
-    ReportLogger.info(`TestBenchAutomation.runAutomatedTest(testCase: ${JSON.stringify(testCase)})`);
+    ReportLogger.info(`TestBenchAutomation.runAutomatedTest(testCase: ${JSON.stringify(testCase)}), status: ${JSON.stringify(status)}`);
 
     // if test case already exists with the externalId, update test steps
     var testStepsCurrent: Array<TestStep> = []; // remember test steps with id's for later execution results
@@ -42,7 +42,7 @@ export class TestBenchAutomation {
     if (testCaseId !== undefined) {
       let testCaseResponse = await this.tbcsApi.getTestCaseById(testCaseId);
       try {
-        // TODO: check for changed test steps, if so, update them and set review flag on test case
+        // INFO: Maybe check for changed test steps, if so, update them and set review flag on test case
         // delete all existing steps and create them new, only from test step block 'Test' expecting an structured test case
         for (let block of testCaseResponse.testSequence.testStepBlocks) {
           if (block.name === 'Test') {
