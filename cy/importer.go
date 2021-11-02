@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // Import starts the import into TestBench CS.
@@ -217,7 +218,10 @@ func createTestCase(tenantID, productID, userStoryID int, testCase *TestCase, ho
 }
 
 func patchTestCase(tenantID, productID, testCaseID int, testCase *TestCase, host, token string) {
-	jsonValue, _ := json.Marshal(testCase.TestCaseDetails) //TODO: ensure existing description
+	if len(strings.TrimSpace(testCase.TestCaseDetails.Description.Text)) == 0 {
+		testCase.TestCaseDetails.Description.Text = "TBD"
+	}
+	jsonValue, _ := json.Marshal(testCase.TestCaseDetails)
 
 	apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID) + "/specifications/testCases/" + strconv.Itoa(testCaseID)
 	request, err := http.NewRequest(http.MethodPatch, apiURL, bytes.NewBuffer(jsonValue))
