@@ -146,7 +146,7 @@ func createUserStory(tenantID, productID, epicID int, userStory *UserStory, host
 func createTestCase(tenantID, productID, userStoryID int, testCase *TestCase, host, token string) (testCaseID int) {
 	// check if testcase already exists by external ID, if so update it and return
 	if testCase.TestCaseDetails.ExternalID.Value != "" {
-		//TODO: check in existing testcase if there are any changes before (review flag must not be updated then)
+		//INFO: check in existing test case if there are any changes before (review flag must not be updated then)
 		// https://172.21.3.2/api/tenants/1/products/4/elements?fieldValue=externalId%3Aequals%3ACY-SAMPLE-LOGIN-01&types=TestCase
 		apiURL := host + "/api/tenants/" + strconv.Itoa(tenantID) + "/products/" + strconv.Itoa(productID)
 		apiURL += "/elements?fieldValue=externalId%3Aequals%3A" + testCase.TestCaseDetails.ExternalID.Value + "&types=TestCase"
@@ -169,19 +169,19 @@ func createTestCase(tenantID, productID, userStoryID int, testCase *TestCase, ho
 			fmt.Fprintln(os.Stderr, "Request failed with: ", response.Status, " Response: ", string(result))
 		}
 
-		var responseData []elementResponses
+		var responseData elements
 		err = json.Unmarshal(result, &responseData)
 
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Failed to read response with error ", err)
 			return
 		}
-		if len(responseData) > 0 && responseData[0].TestCaseSummary.Tbid != "" {
-			testCaseID = responseData[0].TestCaseSummary.ID
+		if len(responseData.Elements) > 0 && responseData.Elements[0].TestCaseSummary.Tbid != "" {
+			testCaseID = responseData.Elements[0].TestCaseSummary.ID
 			// test case found, now delete all steps of the existing test case, they will be created new
 			deleteAllTestSteps(tenantID, productID, testCaseID, host, token)
 
-			return // todo only return after teststeps deleted
+			return
 		}
 	}
 

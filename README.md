@@ -137,7 +137,7 @@ Configuration is done in file examples/cypress.json
     "username": "manager",
     "password": "testbench",
     "productId": "4",
-    "closeAlreadyRunningAutomation": true,
+    "testSessionPrefix": "CYPRESS",
     "skipResultImport": false
   },
   ...

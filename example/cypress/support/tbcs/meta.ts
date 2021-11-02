@@ -3,7 +3,7 @@ declare function TBCS_CATEGORY(value: string): void;
 declare function TBCS_DESCRIPTION(value: string): void;
 declare function TBCS_AUTID(value: string): void;
 
-// TODO: Categories should be handled per test spec file
+// INFO: Categories should be handled per test spec file
 globalThis.TBCS_CATEGORY = (value: string) => {
   cy.log('TBCS_CATEGORY(' + value + ')');
 };

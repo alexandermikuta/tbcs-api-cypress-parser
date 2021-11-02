@@ -72,6 +72,9 @@ type epicCreatedResponse struct {
 	EpicID  int `json:"epicId"`
 }
 
+type elements struct {
+	Elements []*elementResponses `json:"elements"`
+}
 type elementResponses struct {
 	TestCaseSummary *testCaseSummary `json:"TestCaseSummary"`
 }
