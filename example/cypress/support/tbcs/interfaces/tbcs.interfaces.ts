@@ -1,4 +1,3 @@
-
 export interface TestBenchOptions {
   serverUrl: string;
   workspace: string;
@@ -25,10 +24,10 @@ export interface TestBenchTestSessionExecution {
 }
 
 export enum Status {
-  Failed = 'Failed',
-  Passed = 'Passed',
-  Pending = 'Pending',
-  Calculated = 'Calculated',
+  Failed = '"Failed"',
+  Passed = '"Passed"',
+  Pending = '"Pending"',
+  Calculated = '"Calculated"',
 }
 
 export interface TestStepResult {

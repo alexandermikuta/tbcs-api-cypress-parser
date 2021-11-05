@@ -19,16 +19,16 @@ export class TestBenchAutomation {
     this.testSessionId = await this.tbcsApi.createTestSession(sessionName);
     await this.tbcsApi.joinTestSessionSelf(this.testSessionId);
     let sessionData = {
-      status: 'InProgress'
-    }
+      status: 'InProgress',
+    };
     await this.tbcsApi.patchTestSession(this.testSessionId, sessionData);
   }
 
   public async End() {
     ReportLogger.info('TestBenchAutomation.End()');
     let sessionData = {
-      status: 'Completed'
-    }
+      status: 'Completed',
+    };
     await this.tbcsApi.patchTestSession(this.testSessionId, sessionData);
     await this.tbcsApi.logout();
   }
@@ -56,7 +56,7 @@ export class TestBenchAutomation {
           let stepId = await this.tbcsApi.createTestStep(testCaseId, step);
           testStepsCurrent.push({
             id: stepId,
-            name: step
+            name: step,
           });
         }
       } catch (error) {
@@ -71,7 +71,7 @@ export class TestBenchAutomation {
         responsibles: [this.apiSession.userId],
         isAutomated: true,
         toBeReviewed: true,
-        externalId: { value: testCase.externalId ? testCase.externalId : null }
+        externalId: { value: testCase.externalId ? testCase.externalId : null },
       };
 
       await this.tbcsApi.patchTestCase(testCaseId, patchData);
@@ -82,7 +82,7 @@ export class TestBenchAutomation {
         let stepId = await this.tbcsApi.createTestStep(testCaseId, step);
         testStepsCurrent.push({
           id: stepId,
-          name: step
+          name: step,
         });
       }
     }
@@ -90,7 +90,7 @@ export class TestBenchAutomation {
     // add execution
     let executionId = await this.tbcsApi.createTestCaseExecution(testCaseId);
     await this.tbcsApi.updateTestSession(testCaseId, executionId, this.testSessionId);
-    await this.tbcsApi.updateExecutionStatus(testCaseId, executionId, 'InProgress');
+    await this.tbcsApi.updateExecutionStatus(testCaseId, executionId, '"InProgress"');
 
     var testStepResults: TestStepResult[] = [];
     for (let step of testStepsCurrent) {
@@ -105,6 +105,6 @@ export class TestBenchAutomation {
     for (let step of testStepResults) {
       await this.tbcsApi.assignTestStepExecutionResult(testCaseId, executionId, step.testStepId, step.result);
     }
-    await this.tbcsApi.updateExecutionStatus(testCaseId, executionId, 'Finished');
+    await this.tbcsApi.updateExecutionStatus(testCaseId, executionId, '"Finished"');
   }
 }

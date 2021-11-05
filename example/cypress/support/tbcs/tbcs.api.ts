@@ -1,14 +1,14 @@
 const axios = require('axios');
-import { TestBenchApiSession, TestBenchOptions, TestBenchTestCase, TestBenchTestSessionExecution, TestBenchTestSessionExecutions } from './interfaces/tbcs.interfaces';
+import { TestBenchApiSession, TestBenchOptions, TestBenchTestSessionExecution, TestBenchTestSessionExecutions } from './interfaces/tbcs.interfaces';
 import { ReportLogger } from './report.logger';
 
 export class TestBenchApi {
   private apiSession: TestBenchApiSession = undefined;
 
-  constructor(private options: TestBenchOptions) { }
+  constructor(private options: TestBenchOptions) {}
 
   private apiUrl(): string {
-    return this.options.serverUrl + '/api'
+    return this.options.serverUrl + '/api';
   }
 
   private productUrl(suffix: string) {
@@ -64,12 +64,12 @@ export class TestBenchApi {
   }
 
   public createTestSession(sessionName: string) {
-    ReportLogger.info(`TestBenchApi.createTestSession(name: ${name})`);
+    ReportLogger.info(`TestBenchApi.createTestSession(name: ${sessionName})`);
     return axios({
       method: 'post',
       url: this.testSessionUrl('/v1'),
       headers: this.apiTokenHeaders(),
-      data: { name: sessionName }
+      data: { name: sessionName },
     })
       .then(response => {
         ReportLogger.debug(JSON.stringify(response));
@@ -109,10 +109,10 @@ export class TestBenchApi {
     let execution: TestBenchTestSessionExecution = {
       testCaseIds: { testCaseId: testCaseId },
       executionId: executionId,
-    }
+    };
     let executions: TestBenchTestSessionExecutions = {
       addExecutions: [execution],
-    }
+    };
     return axios({
       method: 'patch',
       url: this.testSessionUrl('/' + testSessionId + '/assign/executions/v1'),
@@ -202,7 +202,7 @@ export class TestBenchApi {
       headers: this.apiTokenHeaders(),
       data: {
         name: testCaseName,
-        testCaseType: type
+        testCaseType: type,
       },
     })
       .then(response => {
@@ -235,7 +235,7 @@ export class TestBenchApi {
       headers: this.apiTokenHeaders(),
       data: {
         testStepBlock: 'Test',
-        description: testStepName
+        description: testStepName,
       },
     })
       .then(response => {
@@ -289,7 +289,9 @@ export class TestBenchApi {
   }
 
   public assignTestStepExecutionResult(testCaseId: string, executionId: string, testStepId: string, result: string) {
-    ReportLogger.info(`TestBenchApi.assignTestStepExecutionResult(testCaseId: ${testCaseId}, executionId: ${executionId}, testStepId: ${testStepId}, result: ${result})`);
+    ReportLogger.info(
+      `TestBenchApi.assignTestStepExecutionResult(testCaseId: ${testCaseId}, executionId: ${executionId}, testStepId: ${testStepId}, result: ${result})`,
+    );
     return axios({
       method: 'put',
       url: this.productUrl('/executions/testCases/' + testCaseId + '/executions/' + executionId + '/testSteps/' + testStepId + '/result'),
