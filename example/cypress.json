@@ -7,7 +7,7 @@
     "username": "<user>",
     "password": "<password>",
     "productId": "<product ID, see README.md>",
-    "closeAlreadyRunningAutomation": true,
+    "testSessionPrefix": "CYPRESS",
     "skipResultImport": true
   },
   "baseUrl": "https://vsr.testbench.com",

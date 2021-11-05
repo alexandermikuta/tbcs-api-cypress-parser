@@ -240,6 +240,7 @@ function afterAllTests() {
   } catch (error) {
     ReportLogger.error(error);
   }
+  if (reporterOptions.skipResultImport) return;
   cy.wrap('Closing TBCS test session.').then(() => {
     return new Cypress.Promise((resolve, _) => {
       setTimeout(async () => {
