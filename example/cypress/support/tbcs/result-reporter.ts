@@ -80,18 +80,14 @@ function beforeAllTests() {
   // wait until login finished (the cypress way)
   if (reporterOptions.skipResultImport) return;
   if (!alreadyLoggedIn) {
-    cy.wrap(null).then(() => {
-      return new Cypress.Promise((resolve, _) => {
-        setTimeout(async () => {
-          await tbcsAutomation.Start();
-          alreadyLoggedIn = true;
-          resolve('Logged in');
-        }, 2000);
-      }).then(res => {
-        expect(res).to.eq('Logged in');
+    cy.wrap('Login to TBCS')
+      .then(async () => {
+        await tbcsAutomation.Start();
+        alreadyLoggedIn = true;
+      })
+      .then(_ => {
         expect(alreadyLoggedIn).to.be.true;
       });
-    });
   }
 }
 
@@ -135,16 +131,13 @@ function afterEachTest() {
     testSteps: steps,
   };
   // run the import not asyncronous to prevent writing results to wrong test cases (humbled external id's)
-  cy.wrap('Sending result to TBCS').then(() => {
-    return new Cypress.Promise((resolve, _) => {
-      setTimeout(async () => {
-        await tbcsAutomation.PublishAutomatedTest(tbcsTestCase, reportTest.failed ? Status.Failed : Status.Passed);
-        resolve('Result sent');
-      }, 2000);
-    }).then(res => {
-      expect(res).to.eq('Result sent');
+  cy.wrap('Sending result to TBCS')
+    .then(async () => {
+      await tbcsAutomation.PublishAutomatedTest(tbcsTestCase, reportTest.failed ? Status.Failed : Status.Passed);
+    })
+    .then(_ => {
+      expect(true).to.equal(true);
     });
-  });
 }
 
 // https://github.com/junit-team/junit5/blob/master/platform-tests/src/test/resources/jenkins-junit.xsd
@@ -241,16 +234,13 @@ function afterAllTests() {
     ReportLogger.error(error);
   }
   if (reporterOptions.skipResultImport) return;
-  cy.wrap('Closing TBCS test session.').then(() => {
-    return new Cypress.Promise((resolve, _) => {
-      setTimeout(async () => {
-        await tbcsAutomation.End();
-        resolve('sent');
-      }, 2000);
-    }).then(res => {
-      expect(res).to.eq('sent');
+  cy.wrap('Closing TBCS test session.')
+    .then(async () => {
+      await tbcsAutomation.End();
+    })
+    .then(_ => {
+      expect(true).to.equal(true);
     });
-  });
 }
 
 startEventListeners();
