@@ -75,13 +75,7 @@ export class TestBenchApi {
         ReportLogger.debug(JSON.stringify(response));
         return response.data.testSessionId;
       })
-      .catch(error => {
-        if (error.response && error.response.status !== 201) {
-          ReportLogger.warn('Create new test session failed.');
-        } else {
-          ReportLogger.error(JSON.stringify(error));
-        }
-      });
+      .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
   public joinTestSessionSelf(sessionId: string) {
@@ -95,13 +89,7 @@ export class TestBenchApi {
       .then(response => {
         ReportLogger.debug(JSON.stringify(response));
       })
-      .catch(error => {
-        if (error.response && error.response.status !== 200) {
-          ReportLogger.warn('Join test session failed.');
-        } else {
-          ReportLogger.error(JSON.stringify(error));
-        }
-      });
+      .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
   public updateTestSession(testCaseId, executionId, testSessionId) {
@@ -122,13 +110,7 @@ export class TestBenchApi {
       .then(response => {
         ReportLogger.debug(JSON.stringify(response.data));
       })
-      .catch(error => {
-        if (error.response && error.response.status !== 201) {
-          ReportLogger.warn('Adding execution to test session failed.');
-        } else {
-          ReportLogger.error(JSON.stringify(error));
-        }
-      });
+      .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
   public patchTestSession(testSessionId: string, sessionData: any) {
@@ -142,13 +124,7 @@ export class TestBenchApi {
       .then(response => {
         ReportLogger.debug(JSON.stringify(response.data));
       })
-      .catch(error => {
-        if (error.response && error.response.status !== 201) {
-          ReportLogger.warn('Failed to patch test session.');
-        } else {
-          ReportLogger.error(JSON.stringify(error));
-        }
-      });
+      .catch(error => ReportLogger.error(JSON.stringify(error)));
   }
 
   public getTestCaseByExternalId(externalId: string): string {
@@ -269,6 +245,21 @@ export class TestBenchApi {
       .then(response => {
         ReportLogger.debug(JSON.stringify(response));
         return response.data.executionId;
+      })
+      .catch(error => ReportLogger.error(JSON.stringify(error)));
+  }
+
+  // result: Valid values are: "Pending", "Passed", "Failed" or "Calculated"
+  public updateExecutionResult(testCaseId: string, executionId: string, result: string) {
+    ReportLogger.info(`TestBenchApi.updateExecutionResult(testCaseId: ${testCaseId}, executionId: ${executionId}, result: ${result})`);
+    return axios({
+      method: 'patch',
+      url: this.productUrl('/executions/testCases/' + testCaseId + '/executions/' + executionId),
+      headers: this.apiTokenHeaders(),
+      data: `{ "executionResult": ${result} }`,
+    })
+      .then(response => {
+        ReportLogger.debug(JSON.stringify(response));
       })
       .catch(error => ReportLogger.error(JSON.stringify(error)));
   }

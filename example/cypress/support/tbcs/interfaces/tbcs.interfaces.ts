@@ -6,6 +6,7 @@ export interface TestBenchOptions {
   productId: number;
   testSessionPrefix: string;
   skipResultImport: boolean;
+  skipTestCaseUpdates: boolean;
 }
 
 export interface TestBenchApiSession {
@@ -23,7 +24,7 @@ export interface TestBenchTestSessionExecution {
   executionId: number;
 }
 
-export enum Status {
+export enum Result {
   Failed = '"Failed"',
   Passed = '"Passed"',
   Pending = '"Pending"',
@@ -32,7 +33,7 @@ export enum Status {
 
 export interface TestStepResult {
   testStepId: string;
-  result: Status;
+  result: Result;
 }
 
 export interface TestStep {

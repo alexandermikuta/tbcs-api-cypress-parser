@@ -8,6 +8,8 @@ export enum LogLevel {
 }
 export class ReportLogger {
   private static TEST_RESULT_FOLDER = 'test-results';
+  private static LOG_FILENAME = 'reporter.log';
+  private static ERRORFLAG_FILENAME = 'reportingError';
   private static LOG_LEVEL: LogLevel = LogLevel.INFO;
 
   public static setlevel(level: LogLevel) {
@@ -28,10 +30,14 @@ export class ReportLogger {
 
   public static error(msg: string) {
     ReportLogger.LOG_LEVEL >= LogLevel.ERROR ? ReportLogger.log('ERROR', msg) : null;
+    cy.writeFile(`${ReportLogger.TEST_RESULT_FOLDER}/${ReportLogger.ERRORFLAG_FILENAME}`, '', {
+      encoding: 'utf8',
+      flag: 'w+',
+    }).then(() => ReportLogger.debug('Error flag file written.'));
   }
 
   private static log(level: string, msg: string) {
-    cy.writeFile(`${ReportLogger.TEST_RESULT_FOLDER}/reporter.log`, moment().toISOString() + '\t' + level + '\t' + msg + '\n', {
+    cy.writeFile(`${ReportLogger.TEST_RESULT_FOLDER}/${ReportLogger.LOG_FILENAME}`, moment().toISOString() + '\t' + level + '\t' + msg + '\n', {
       encoding: 'utf8',
       flag: 'as+',
     });

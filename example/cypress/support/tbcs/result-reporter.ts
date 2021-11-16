@@ -1,6 +1,6 @@
 import moment = require('moment');
 import { ReportTestCase, ReportTestCommand, ReportTestSuite } from './interfaces/report.interfaces';
-import { Status, TestBenchOptions, TestBenchTestCase } from './interfaces/tbcs.interfaces';
+import { Result, TestBenchOptions, TestBenchTestCase } from './interfaces/tbcs.interfaces';
 import { ReportLogger } from './report.logger';
 import { TestBenchAutomation } from './tbcs.publish';
 
@@ -133,7 +133,7 @@ function afterEachTest() {
   // run the import not asyncronous to prevent writing results to wrong test cases (humbled external id's)
   cy.wrap('Sending result to TBCS')
     .then(async () => {
-      await tbcsAutomation.PublishAutomatedTest(tbcsTestCase, reportTest.failed ? Status.Failed : Status.Passed);
+      await tbcsAutomation.PublishAutomatedTest(tbcsTestCase, reportTest.failed ? Result.Failed : Result.Passed);
     })
     .then(_ => {
       expect(true).to.equal(true);

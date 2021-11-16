@@ -1,18 +1,19 @@
 {
-	"integrationFolder": "tests",
-	"reporter" : "junit",
-	"reporterOptions": {
+  "integrationFolder": "tests",
+  "reporter": "junit",
+  "reporterOptions": {
     "serverUrl": "https://cloud01-eu.testbench.com",
     "workspace": "<workspace>",
     "username": "<user>",
     "password": "<password>",
     "productId": "<product ID, see README.md>",
     "testSessionPrefix": "CYPRESS",
-    "skipResultImport": true
+    "skipResultImport": false,
+    "skipTestCaseUpdates": false
   },
   "baseUrl": "https://vsr.testbench.com",
-	"screenshotsFolder" :"test-results/screenshots",
-	"video": false,
+  "screenshotsFolder": "test-results/screenshots",
+  "video": false,
   "viewportWidth": 1280,
   "numTestsKeptInMemory": 0,
   "animationDistanceThreshold": 3,
